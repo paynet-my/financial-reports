@@ -1,6 +1,4 @@
-# report-proxy-fi
-
-
+# PayNet Financial Report Script
 
 ## Getting started
 
