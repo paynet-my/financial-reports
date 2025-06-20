@@ -10,7 +10,7 @@ This is a public facing API running on a Lambda function of OSP's report API
 
 Below is a concise guide on how to use the provided Bash (`.sh`) and Batch (`.bat`) scripts for downloading reports.
 
-## Script flags
+## Script **flags**
 
 **Options**
 
@@ -23,6 +23,7 @@ Below is a concise guide on how to use the provided Bash (`.sh`) and Batch (`.ba
 - `--window` – (Optional) Additional windowing parameter for the report
 - `--output-dir` – (Optional) Directory to save downloaded files; defaults to current directory if missing
 - `--api-url` – (Optional) Report service API URL; defaults to https://api.reports.paynet.my
+- `--compressed` - Decompress the downloaded file (optional)
 - `--help` – Display the script’s built-in usage message
 
 ### Bash Script (Linux/macOS)
@@ -52,6 +53,7 @@ Example
   --date 2024-06-10 \
   --product MYDEBIT \
   --fiid FIID \
+  --compressed \
   --api-url https://api.reports.uat.inet.paynet.my \
   --output-dir ./downloads
 ```
@@ -82,28 +84,31 @@ download_report.bat ^
   --date 2024-11-08 ^
   --product MYDEBIT ^
   --fiid FIID ^
+  --compressed
   --api-url https://api.reports.uat.inet.paynet.my
 ```
+**🔧 Command Not Found Errors**
+- **OpenSSL/curl missing**: Install required tools or add them to your system PATH
+- **Permission denied (Linux/macOS)**: Run `chmod +x download_report.sh` to make the script executable
 
-### Troubleshooting
+**🔐 Authentication Problems**
+- **Invalid token**: Verify your client credentials are correct
+- **Authentication failed**: Check HMAC signature generation and timestamp
 
-1. **OpenSSL or curl not found**
+**📁 Download Issues**
+- **Empty/missing file**: The one-time download URL may have expired - retry with fresh credentials
+- **OTT Invalid**: One-time token has been used or expired - generate a new download request
 
-   - Install them or add to your system PATH.
+**📄 File Format Problems**
+- **Unreadable file format**: Add the `--compressed` flag to handle gzipped responses
+- **Corrupted download**: Check network connection and retry the download
 
-2. **Permission denied (Linux/macOS)**
+### Best Practices
 
-   - Ensure the script is executable: chmod +x download_report.sh.
+- Store credentials securely and avoid hardcoding them in scripts
+- Use the `--compressed` flag for automatic decompression
 
-3. **Invalid token / authentication failed**
-
-   - Double-check your client credentials or HMAC signature logic.
-
-4. **Empty/missing file/OTT Invalid**
-   
-   - The one-time URL may have expired or been used already. Retry obtaining the URL with fresh credentials.
-
-### Troubleshooting
+### Additional Resources
 
 For more information , please visit the following online resource available on PayNet's Developer's Portal 
 
