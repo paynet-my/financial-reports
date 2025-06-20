@@ -13,10 +13,11 @@ usage() {
     echo "  --date                Date for the report in YYYY-MM-DD format (required)"
     echo "  --output-dir          Directory to save downloaded files (optional)"
     echo "  --api-url             API URL (optional)"
+    echo "  --compressed          Decompress the downloaded file (optional)"
     echo "  --help                Display this help message"
     echo
     echo "Example:"
-    echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01 --date 2024-11-08"
+    echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01 --date 2024-11-08 --compressed"
     echo "  $0 --client-id myclient --client-secret mysecret --product san --report DFCUP --date 2024-11-08"
     echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01_C1 --date 2024-11-08 --output-dir ./downloads"
     exit 1
@@ -134,6 +135,10 @@ while [[ $# -gt 0 ]]; do
             fi
             OUTPUT_DIR="$2"
             shift 2
+            ;;
+        --compressed)
+            COMPRESSED=true
+            shift
             ;;
         --help)
             usage
@@ -263,8 +268,16 @@ echo "Downloading file..."
 # Create a temporary file for headers
 HEADERS_FILE=$(mktemp)
 
+# Build curl command with opt --compressed flag if specified
+CURL_CMD="curl -s -w \"%{http_code}\" -D \"${HEADERS_FILE}\" -o \"${OUTPUT_DIR}temp_download\""
+
+if [ "$COMPRESSED" = true ]; then
+    CURL_CMD="$CURL_CMD --compressed"
+fi
+
+CURL_CMD="$CURL_CMD \"$NEW_URL\""
 # Download the file in a single request while capturing headers
-HTTP_CODE=$(curl -s -w "%{http_code}" -D "${HEADERS_FILE}" -o "${OUTPUT_DIR}temp_download" "$NEW_URL")
+HTTP_CODE=$(eval $CURL_CMD)
 
 if [ "$HTTP_CODE" != "200" ]; then
     echo "Download failed with HTTP code: $HTTP_CODE"
