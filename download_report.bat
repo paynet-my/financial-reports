@@ -6,7 +6,6 @@ REM Default values
 REM ============================================================
 set "API_URL=https://api.reports.paynet.my"
 set "OUTPUT_DIR=.\"
-set "COMPRESSED=false"
 
 REM ============================================================
 REM Parse command line arguments
@@ -176,11 +175,6 @@ if "%~1"=="--api-url" (
   shift /1
   goto parse_args
 )
-if "%~1"=="--compressed" (
-  set "COMPRESSED=true"
-  shift /1
-  goto parse_args
-)
 if "%~1"=="--help" (
     call :usage
     exit /b 0
@@ -259,7 +253,6 @@ echo  - Report Type: %REPORT_TYPE%
 echo  - Product: %PRODUCT%
 echo  - Date: %DDATE%
 echo  - Output Directory: %OUTPUT_DIR%
-echo  - Compressed: %COMPRESSED%
 
 REM ============================================================
 REM Get OAuth token
@@ -355,13 +348,8 @@ set "BODY_FILE=%TEMP%\body_%RANDOM%.bin"
 echo Making a single request to avoid invalidating the URL...
 
 REM Perform a single request, writing headers and body to separate temp files
-if "%COMPRESSED%"=="true" (
-    curl -sSL --compressed -D "%HEADERS_FILE%" -o "%BODY_FILE%" ^
-        "%NEW_URL%"
-) else (
-    curl -sSL -D "%HEADERS_FILE%" -o "%BODY_FILE%" ^
-        "%NEW_URL%"
-)
+curl -sSL --compressed -D "%HEADERS_FILE%" -o "%BODY_FILE%" ^
+    "%NEW_URL%"
 REM Extract Content-Disposition header if present
 set "CONTENT_DISPOSITION="
 for /f "tokens=* usebackq" %%h in (`findstr /i "Content-Disposition" "%HEADERS_FILE%"`) do (
@@ -450,11 +438,10 @@ echo   --date                Date for the report in YYYY-MM-DD format (required)
 echo   --product             Product type (required)
 echo   --output-dir          Directory to save downloaded files (optional)
 echo   --api-url             API URL (optional)
-echo   --compressed          Decompress the downloaded file (optional)
 echo   --help                Display this help message
 echo.
 echo Example:
-echo   %~nx0 --client-id myclient --client-secret mysecret --fiid MBB --report SETL01 --date 2024-11-08 --product mydebit --compressed
+echo   %~nx0 --client-id myclient --client-secret mysecret --fiid MBB --report SETL01 --date 2024-11-08 --product mydebit
 echo   %~nx0 --client-id myclient --client-secret mysecret --fiid CIMB --report DFCUP --date 2024-11-08 --product san
 echo   %~nx0 --client-id myclient --client-secret mysecret --fiid RHB --report SETL01_C1 --date 2024-11-08 --product mydebit --output-dir .\downloads
 goto :eof
