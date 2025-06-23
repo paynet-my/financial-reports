@@ -1,6 +1,4 @@
-# report-proxy-fi
-
-
+# PayNet Financial Report Script
 
 ## Getting started
 
@@ -10,7 +8,7 @@ This is a public facing API running on a Lambda function of OSP's report API
 
 Below is a concise guide on how to use the provided Bash (`.sh`) and Batch (`.bat`) scripts for downloading reports.
 
-## Script flags
+## Script **flags**
 
 **Options**
 
@@ -84,26 +82,23 @@ download_report.bat ^
   --fiid FIID ^
   --api-url https://api.reports.uat.inet.paynet.my
 ```
+**🔧 Command Not Found Errors**
+- **OpenSSL/curl missing**: Install required tools or add them to your system PATH
+- **Permission denied (Linux/macOS)**: Run `chmod +x download_report.sh` to make the script executable
 
-### Troubleshooting
+**🔐 Authentication Problems**
+- **Invalid token**: Verify your client credentials are correct
+- **Authentication failed**: Check HMAC signature generation and timestamp
 
-1. **OpenSSL or curl not found**
+**📁 Download Issues**
+- **Empty/missing file**: The one-time download URL may have expired - retry with fresh credentials
+- **OTT Invalid**: One-time token has been used or expired - generate a new download request
 
-   - Install them or add to your system PATH.
+### Best Practices
 
-2. **Permission denied (Linux/macOS)**
+- Store credentials securely and NEVER hardcoding them in scripts
 
-   - Ensure the script is executable: chmod +x download_report.sh.
-
-3. **Invalid token / authentication failed**
-
-   - Double-check your client credentials or HMAC signature logic.
-
-4. **Empty/missing file/OTT Invalid**
-   
-   - The one-time URL may have expired or been used already. Retry obtaining the URL with fresh credentials.
-
-### Troubleshooting
+### Additional Resources
 
 For more information , please visit the following online resource available on PayNet's Developer's Portal 
 

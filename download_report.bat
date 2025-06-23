@@ -348,9 +348,8 @@ set "BODY_FILE=%TEMP%\body_%RANDOM%.bin"
 echo Making a single request to avoid invalidating the URL...
 
 REM Perform a single request, writing headers and body to separate temp files
-curl -sSL -D "%HEADERS_FILE%" -o "%BODY_FILE%" ^
+curl -sSL --compressed -D "%HEADERS_FILE%" -o "%BODY_FILE%" ^
     "%NEW_URL%"
-
 REM Extract Content-Disposition header if present
 set "CONTENT_DISPOSITION="
 for /f "tokens=* usebackq" %%h in (`findstr /i "Content-Disposition" "%HEADERS_FILE%"`) do (

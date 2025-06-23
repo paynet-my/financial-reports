@@ -263,8 +263,11 @@ echo "Downloading file..."
 # Create a temporary file for headers
 HEADERS_FILE=$(mktemp)
 
+CURL_CMD="curl --compressed -s -w \"%{http_code}\" -D \"${HEADERS_FILE}\" -o \"${OUTPUT_DIR}temp_download\""
+
+CURL_CMD="$CURL_CMD \"$NEW_URL\""
 # Download the file in a single request while capturing headers
-HTTP_CODE=$(curl -s -w "%{http_code}" -D "${HEADERS_FILE}" -o "${OUTPUT_DIR}temp_download" "$NEW_URL")
+HTTP_CODE=$(eval $CURL_CMD)
 
 if [ "$HTTP_CODE" != "200" ]; then
     echo "Download failed with HTTP code: $HTTP_CODE"
