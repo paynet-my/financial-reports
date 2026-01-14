@@ -2,7 +2,7 @@
 
 ## Getting started
 
-This is a public facing API running on a Lambda function of OSP's report API
+This is a public facing OSP's reporting API
 
 ## How to use the automation script
 
@@ -17,8 +17,7 @@ Below is a concise guide on how to use the provided Bash (`.sh`) and Batch (`.ba
 - `--fiid` – (Optional) FIID or financial institution ID
 - `--report` – Report type to download (required)
 - `--date` – Date (YYYY-MM-DD) for the report (required)
-- `--product` - Product type; san or mydebit (required)
-- `--window` – (Optional) Additional windowing parameter for the report
+- `--product` - Product type; SAN or MYDEBIT (required)
 - `--output-dir` – (Optional) Directory to save downloaded files; defaults to current directory if missing
 - `--api-url` – (Optional) Report service API URL; defaults to https://api.reports.paynet.my
 - `--help` – Display the script’s built-in usage message
@@ -47,8 +46,8 @@ Example
   --client-id myclient \
   --client-secret mysecret \
   --report SETEL01 \
-  --date 2024-06-10 \
-  --product MYDEBIT \
+  --date 2025-12-31 \
+  --product SAN \
   --fiid FIID \
   --api-url https://api.reports.uat.inet.paynet.my \
   --output-dir ./downloads
@@ -77,20 +76,20 @@ download_report.bat ^
   --client-id myclient ^
   --client-secret mysecret ^
   --report SETEL01 ^
-  --date 2024-11-08 ^
-  --product MYDEBIT ^
+  --date 2025-12-31 ^
+  --product SAN ^
   --fiid FIID ^
   --api-url https://api.reports.uat.inet.paynet.my
 ```
-**🔧 Command Not Found Errors**
+**Command Not Found Errors**
 - **OpenSSL/curl missing**: Install required tools or add them to your system PATH
 - **Permission denied (Linux/macOS)**: Run `chmod +x download_report.sh` to make the script executable
 
-**🔐 Authentication Problems**
+**Authentication Problems**
 - **Invalid token**: Verify your client credentials are correct
 - **Authentication failed**: Check HMAC signature generation and timestamp
 
-**📁 Download Issues**
+**Download Issues**
 - **Empty/missing file**: The one-time download URL may have expired - retry with fresh credentials
 - **OTT Invalid**: One-time token has been used or expired - generate a new download request
 
