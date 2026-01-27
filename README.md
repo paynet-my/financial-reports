@@ -101,5 +101,5 @@ download_report.bat ^
 
 For more information , please visit the following online resource available on PayNet's Developer's Portal 
 
-- [Overview](https://docs.developer.paynet.my/docs/operations/financial-reports/financial-reports-v1/overview) 
+- [Overview](https://docs.developer.paynet.my/docs/operations/financial-reports/tech-refresh/overview) 
 - [API Explorer](https://docs.developer.paynet.my/api-reference/reports/reports) 
