@@ -9,7 +9,7 @@ usage() {
     echo "  --client-secret       Client secret for authentication (required)"
     echo "  --fiid                Date for the report in YYYY-MM-DD format (required)"
     echo "  --product             Product type (required)"
-    echo "  --report              Type of report to download (required)"
+    echo "  --report              Type of report to download, comma-delimited for multiple (required)"
     echo "  --date                Date for the report in YYYY-MM-DD format (required)"
     echo "  --output-dir          Directory to save downloaded files (optional)"
     echo "  --api-url             API URL (optional)"
@@ -19,6 +19,7 @@ usage() {
     echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01 --date 2024-11-08"
     echo "  $0 --client-id myclient --client-secret mysecret --product san --report DFCUP --date 2024-11-08"
     echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01_C1 --date 2024-11-08 --output-dir ./downloads"
+    echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01,AIR02,SETL02 --date 2024-11-08"
     exit 1
 }
 
@@ -197,7 +198,7 @@ fi
 echo "Configuration:"
 echo " - API URL: $API_URL"
 echo " - FIID: $FIID"
-echo " - Report Type: $REPORT_TYPE"
+echo " - Report Type(s): $REPORT_TYPE"
 echo " - Product: $PRODUCT"
 echo " - Date: $DATE"
 
@@ -217,79 +218,82 @@ fi
 
 echo "Access token obtained successfully"
 
-# Prepare JSON payload based on whether WINDOW is provided
-PAYLOAD="{\"fiid\":\"$FIID\",\"report_type\":\"$REPORT_TYPE\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+IFS=',' read -ra REPORT_TYPES <<< "$REPORT_TYPE"
+
+for CURRENT_REPORT in "${REPORT_TYPES[@]}"; do
+    # Trim any surrounding whitespace from the report type
+    CURRENT_REPORT=$(echo "$CURRENT_REPORT" | tr -d '[:space:]')
+
+    echo ""
+    echo "Processing report type: $CURRENT_REPORT"
+
+    # Prepare JSON payload based on whether WINDOW is provided
+    PAYLOAD="{\"fiid\":\"$FIID\",\"report_type\":\"$CURRENT_REPORT\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+
+    TIMESTAMP=$(date +%s)
+    SIGNATURE=$(generate_signature "$TIMESTAMP" "$CLIENT_SECRET")
+
+    echo "Generated signature for download request:"
+    echo " - Timestamp: $TIMESTAMP"
+    echo " - Signature: $SIGNATURE"
 
 
-TIMESTAMP=$(date +%s)
-SIGNATURE=$(generate_signature "$TIMESTAMP" "$CLIENT_SECRET")
+    echo "Sending report request..."
+    RESPONSE=$(curl -s -X POST "$API_URL/v1/reports/download" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "X-Timestamp: $TIMESTAMP" \
+        -H "X-Signature: $SIGNATURE" \
+        -H "Content-Type: application/json" \
+        -d "$PAYLOAD")
 
-echo "Generated signature for download request:"
-echo " - Timestamp: $TIMESTAMP"
-echo " - Signature: $SIGNATURE"
+    # Extract the URL from the response
+    if ! echo "$RESPONSE" | grep -q '"url":' ; then
+        echo "Failed to get download URL for report type: $CURRENT_REPORT"
+        echo "Response: $RESPONSE"
+        continue
+    fi
 
-# Send request to API
-echo "Sending report request..."
-RESPONSE=$(curl -s -X POST "$API_URL/v1/reports/download" \
-    -H "Authorization: Bearer $ACCESS_TOKEN" \
-    -H "X-Timestamp: $TIMESTAMP" \
-    -H "X-Signature: $SIGNATURE" \
-    -H "Content-Type: application/json" \
-    -d "$PAYLOAD")
+    DOWNLOAD_URL=$(echo "$RESPONSE" | sed 's/.*"url":"\([^"]*\)".*/\1/')
 
-# Extract the URL from the response
-if ! echo "$RESPONSE" | grep -q '"url":' ; then
-    echo "Failed to get download URL"
-    echo "Response: $RESPONSE"
-    exit 1
-fi
+    if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "$RESPONSE" ]; then
+        echo "Failed to get download URL - URL extraction failed for report type: $CURRENT_REPORT"
+        echo "Response: $RESPONSE"
+        continue
+    fi
 
-DOWNLOAD_URL=$(echo "$RESPONSE" | sed 's/.*"url":"\([^"]*\)".*/\1/')
+    # Replace \u0026 with & in the URL
+    NEW_URL=$(echo "$DOWNLOAD_URL" | sed 's/\\u0026/\&/g')
 
-if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "$RESPONSE" ]; then
-    echo "Failed to get download URL - URL extraction failed"
-    echo "Response: $RESPONSE"
-    exit 1
-fi
+    echo "Download URL obtained: ${NEW_URL}"
 
-# Replace \u0026 with & in the URL
-NEW_URL=$(echo "$DOWNLOAD_URL" | sed 's/\\u0026/\&/g')
+    echo "Downloading file..."
 
-echo "Download URL obtained: ${NEW_URL}"
+    # Create a temporary file for headers
+    HEADERS_FILE=$(mktemp)
 
-# Download the file with a single request
-echo "Downloading file..."
+    CURL_CMD="curl --compressed -s -w \"%{http_code}\" -D \"${HEADERS_FILE}\" -o \"${OUTPUT_DIR}temp_download\""
 
-# Create a temporary file for headers
-HEADERS_FILE=$(mktemp)
+    CURL_CMD="$CURL_CMD \"$NEW_URL\""
+    HTTP_CODE=$(eval $CURL_CMD)
 
-CURL_CMD="curl --compressed -s -w \"%{http_code}\" -D \"${HEADERS_FILE}\" -o \"${OUTPUT_DIR}temp_download\""
+    if [ "$HTTP_CODE" != "200" ]; then
+        echo "Download failed with HTTP code: $HTTP_CODE for report type: $CURRENT_REPORT"
+        echo "Headers from server:"
+        cat "${HEADERS_FILE}"
+        rm -f "${HEADERS_FILE}" "${OUTPUT_DIR}temp_download"
+        continue
+    fi
 
-CURL_CMD="$CURL_CMD \"$NEW_URL\""
-# Download the file in a single request while capturing headers
-HTTP_CODE=$(eval $CURL_CMD)
+    # Extract filename from headers
+    FILENAME=$(grep -i "Content-Disposition:" "${HEADERS_FILE}" | sed -E 's/.*filename="?([^";]+)"?.*/\1/')
+    rm -f "${HEADERS_FILE}"
 
-if [ "$HTTP_CODE" != "200" ]; then
-    echo "Download failed with HTTP code: $HTTP_CODE"
-    echo "Headers from server:"
-    cat "${HEADERS_FILE}"
-    rm -f "${HEADERS_FILE}" "${OUTPUT_DIR}temp_download"
-    exit 1
-fi
+    if [ -z "$FILENAME" ]; then
+        echo "No filename found in headers, generating one based on report parameters"
+        FILENAME="${PRODUCT}_${CURRENT_REPORT}_${DATE}_$(date +%s).csv"
+    fi
 
-# Extract filename from headers
-FILENAME=$(grep -i "Content-Disposition:" "${HEADERS_FILE}" | sed -E 's/.*filename="?([^";]+)"?.*/\1/')
+    mv "${OUTPUT_DIR}temp_download" "${OUTPUT_DIR}${FILENAME}"
 
-# Clean up the headers file
-rm -f "${HEADERS_FILE}"
-
-# If no filename found, generate one based on report parameters
-if [ -z "$FILENAME" ]; then
-    echo "No filename found in headers, generating one based on report parameters"
-    FILENAME="${PRODUCT}_${REPORT_TYPE}_${DATE}_$(date +%s).csv"
-fi
-
-# Move temp file to final destination
-mv "${OUTPUT_DIR}temp_download" "${OUTPUT_DIR}${FILENAME}"
-
-echo "File successfully downloaded and saved to: ${OUTPUT_DIR}${FILENAME}"
+    echo "File successfully downloaded and saved to: ${OUTPUT_DIR}${FILENAME}"
+done
