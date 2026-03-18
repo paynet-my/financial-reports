@@ -7,7 +7,7 @@ usage() {
     echo "Options:"
     echo "  --client-id           Client ID for authentication (required)"
     echo "  --client-secret       Client secret for authentication (required)"
-    echo "  --fiid                Date for the report in YYYY-MM-DD format (required)"
+    echo "  --fiid                Your institution Financial ID (optional)"
     echo "  --product             Product type (required)"
     echo "  --report              Type of report to download (required)"
     echo "  --date                Date for the report in YYYY-MM-DD format (required)"
@@ -157,11 +157,6 @@ if [ -z "$CLIENT_SECRET" ]; then
     help
 fi
 
-if [ -z "$FIID" ]; then
-    echo "ERROR: Missing required parameter: --fiid"
-    help
-fi
-
 if [ -z "$REPORT_TYPE" ]; then
     echo "ERROR: Missing required parameter: --report"
     help
@@ -196,7 +191,7 @@ fi
 
 echo "Configuration:"
 echo " - API URL: $API_URL"
-echo " - FIID: $FIID"
+if [ -n "$FIID" ]; then echo " - FIID: $FIID"; fi
 echo " - Report Type: $REPORT_TYPE"
 echo " - Product: $PRODUCT"
 echo " - Date: $DATE"
@@ -218,7 +213,11 @@ fi
 echo "Access token obtained successfully"
 
 # Prepare JSON payload based on whether WINDOW is provided
-PAYLOAD="{\"fiid\":\"$FIID\",\"report_type\":\"$REPORT_TYPE\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+if [ -n "$FIID" ]; then
+    PAYLOAD="{\"fiid\":\"$FIID\",\"report_type\":\"$REPORT_TYPE\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+else
+    PAYLOAD="{\"report_type\":\"$REPORT_TYPE\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+fi
 
 
 TIMESTAMP=$(date +%s)
