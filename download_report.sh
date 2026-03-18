@@ -7,10 +7,10 @@ usage() {
     echo "Options:"
     echo "  --client-id           Client ID for authentication (required)"
     echo "  --client-secret       Client secret for authentication (required)"
-    echo "  --fiid                Date for the report in YYYY-MM-DD format (required)"
     echo "  --product             Product type (required)"
     echo "  --report              Type of report to download, comma-delimited for multiple (required)"
     echo "  --date                Date for the report in YYYY-MM-DD format (required)"
+    echo "  --fiid                Your institution Financial ID (optional)"
     echo "  --output-dir          Directory to save downloaded files (optional)"
     echo "  --api-url             API URL (optional)"
     echo "  --help                Display this help message"
@@ -18,8 +18,8 @@ usage() {
     echo "Example:"
     echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01 --date 2024-11-08"
     echo "  $0 --client-id myclient --client-secret mysecret --product san --report DFCUP --date 2024-11-08"
-    echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01_C1 --date 2024-11-08 --output-dir ./downloads"
-    echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01,AIR02,SETL02 --date 2024-11-08"
+    echo "  $0 --client-id myclient --client-secret mysecret --fiid RHB --product mydebit --report SETL01_C1 --date 2024-11-08 --output-dir ./downloads"
+    echo "  $0 --client-id myclient --client-secret mysecret --fiid MBB2 --product mydebit --report SETL01,AIR02,SETL02 --date 2024-11-08"
     exit 1
 }
 
@@ -158,11 +158,6 @@ if [ -z "$CLIENT_SECRET" ]; then
     help
 fi
 
-if [ -z "$FIID" ]; then
-    echo "ERROR: Missing required parameter: --fiid"
-    help
-fi
-
 if [ -z "$REPORT_TYPE" ]; then
     echo "ERROR: Missing required parameter: --report"
     help
@@ -197,7 +192,7 @@ fi
 
 echo "Configuration:"
 echo " - API URL: $API_URL"
-echo " - FIID: $FIID"
+if [ -n "$FIID" ]; then echo " - FIID: $FIID"; fi
 echo " - Report Type(s): $REPORT_TYPE"
 echo " - Product: $PRODUCT"
 echo " - Date: $DATE"
@@ -228,7 +223,11 @@ for CURRENT_REPORT in "${REPORT_TYPES[@]}"; do
     echo "Processing report type: $CURRENT_REPORT"
 
     # Prepare JSON payload based on whether WINDOW is provided
-    PAYLOAD="{\"fiid\":\"$FIID\",\"report_type\":\"$CURRENT_REPORT\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+    if [ -n "$FIID" ]; then
+        PAYLOAD="{\"fiid\":\"$FIID\",\"report_type\":\"$CURRENT_REPORT\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+    else
+        PAYLOAD="{\"report_type\":\"$CURRENT_REPORT\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+    fi
 
     TIMESTAMP=$(date +%s)
     SIGNATURE=$(generate_signature "$TIMESTAMP" "$CLIENT_SECRET")

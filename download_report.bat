@@ -197,11 +197,6 @@ if not defined CLIENT_SECRET (
     call :help
     exit /b 1
 )
-if not defined FIID (
-    echo ERROR: Missing --fiid
-    call :help
-    exit /b 1
-)
 if not defined REPORT_TYPE (
     echo ERROR: Missing --report
     call :help
@@ -248,7 +243,7 @@ REM Display configuration
 REM ============================================================
 echo Configuration:
 echo  - API URL: %API_URL%
-echo  - FIID: %FIID%
+if defined FIID echo  - FIID: %FIID%
 echo  - Report Type: %REPORT_TYPE%
 echo  - Product: %PRODUCT%
 echo  - Date: %DDATE%
@@ -301,9 +296,11 @@ REM ============================================================
 echo Sending report request...
 
 set "TEMP_RESPONSE_FILE=%TEMP%\response_%RANDOM%.json"
-set "PAYLOAD={\"fiid\":\"%FIID%\",\"report_type\":\"%REPORT_TYPE%\",\"product\":\"%PRODUCT%\",\"date\":\"%DDATE%\""
-if defined WINDOW set "PAYLOAD=%PAYLOAD%,\"window\":\"%WINDOW%\""
-set "PAYLOAD=%PAYLOAD%}"
+set "PAYLOAD={"
+if defined FIID set "PAYLOAD=!PAYLOAD!\"fiid\":\"%FIID%\","
+set "PAYLOAD=!PAYLOAD!\"report_type\":\"%REPORT_TYPE%\",\"product\":\"%PRODUCT%\",\"date\":\"%DDATE%\""
+if defined WINDOW set "PAYLOAD=!PAYLOAD!,\"window\":\"%WINDOW%\""
+set "PAYLOAD=!PAYLOAD!}"
 
 curl -s -X POST "%API_URL%/v1/reports/download" ^
     -H "Authorization: Bearer %ACCESS_TOKEN%" ^
@@ -432,7 +429,7 @@ echo.
 echo Options:
 echo   --client-id           Client ID for authentication (required)
 echo   --client-secret       Client secret for authentication (required)
-echo   --fiid                FIID or alias e.g. mbb, cimb, rhb (required)
+echo   --fiid                FIID or alias e.g. mbb, cimb, rhb (optional)
 echo   --report              Type of report to download (required)
 echo   --date                Date for the report in YYYY-MM-DD format (required)
 echo   --product             Product type (required)
@@ -441,9 +438,10 @@ echo   --api-url             API URL (optional)
 echo   --help                Display this help message
 echo.
 echo Example:
+echo   %~nx0 --client-id myclient --client-secret mysecret --report SETL01 --date 2024-11-08 --product mydebit
+echo   %~nx0 --client-id myclient --client-secret mysecret --report DFCUP --date 2024-11-08 --product san
+echo   %~nx0 --client-id myclient --client-secret mysecret --report SETL01_C1 --date 2024-11-08 --product mydebit --output-dir .\downloads
 echo   %~nx0 --client-id myclient --client-secret mysecret --fiid MBB --report SETL01 --date 2024-11-08 --product mydebit
-echo   %~nx0 --client-id myclient --client-secret mysecret --fiid CIMB --report DFCUP --date 2024-11-08 --product san
-echo   %~nx0 --client-id myclient --client-secret mysecret --fiid RHB --report SETL01_C1 --date 2024-11-08 --product mydebit --output-dir .\downloads
 goto :eof
 
 :help
