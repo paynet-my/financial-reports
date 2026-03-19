@@ -7,6 +7,7 @@ usage() {
     echo "Options:"
     echo "  --client-id           Client ID for authentication (required)"
     echo "  --client-secret       Client secret for authentication (required)"
+    echo "  --fiid                Your institution Financial ID (optional)"
     echo "  --product             Product type (required)"
     echo "  --report              Type of report to download, comma-delimited for multiple (required)"
     echo "  --date                Date for the report in YYYY-MM-DD format (required)"
@@ -193,7 +194,7 @@ fi
 echo "Configuration:"
 echo " - API URL: $API_URL"
 if [ -n "$FIID" ]; then echo " - FIID: $FIID"; fi
-echo " - Report Type(s): $REPORT_TYPE"
+echo " - Report Type: $REPORT_TYPE"
 echo " - Product: $PRODUCT"
 echo " - Date: $DATE"
 
@@ -213,28 +214,12 @@ fi
 
 echo "Access token obtained successfully"
 
-IFS=',' read -ra REPORT_TYPES <<< "$REPORT_TYPE"
-
-for CURRENT_REPORT in "${REPORT_TYPES[@]}"; do
-    # Trim any surrounding whitespace from the report type
-    CURRENT_REPORT=$(echo "$CURRENT_REPORT" | tr -d '[:space:]')
-
-    echo ""
-    echo "Processing report type: $CURRENT_REPORT"
-
-    # Prepare JSON payload based on whether WINDOW is provided
-    if [ -n "$FIID" ]; then
-        PAYLOAD="{\"fiid\":\"$FIID\",\"report_type\":\"$CURRENT_REPORT\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
-    else
-        PAYLOAD="{\"report_type\":\"$CURRENT_REPORT\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
-    fi
-
-    TIMESTAMP=$(date +%s)
-    SIGNATURE=$(generate_signature "$TIMESTAMP" "$CLIENT_SECRET")
-
-    echo "Generated signature for download request:"
-    echo " - Timestamp: $TIMESTAMP"
-    echo " - Signature: $SIGNATURE"
+# Prepare JSON payload based on whether WINDOW is provided
+if [ -n "$FIID" ]; then
+    PAYLOAD="{\"fiid\":\"$FIID\",\"report_type\":\"$REPORT_TYPE\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+else
+    PAYLOAD="{\"report_type\":\"$REPORT_TYPE\",\"product\":\"$PRODUCT\",\"date\":\"$DATE\",\"window\":\"$WINDOW\"}"
+fi
 
 
     echo "Sending report request..."
