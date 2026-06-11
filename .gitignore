@@ -1,0 +1,6 @@
+*
+!*/
+!*.md
+!*.bat
+!*.sh
+!.gitignore
