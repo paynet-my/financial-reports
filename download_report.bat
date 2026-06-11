@@ -344,8 +344,13 @@ set "BODY_FILE=%TEMP%\body_%RANDOM%.bin"
 
 echo Making a single request to avoid invalidating the URL...
 
+REM Check if curl supports --compressed (requires zlib)
+set "COMPRESS_FLAG="
+curl -V 2>nul | findstr /i "zlib" >nul
+if not errorlevel 1 set "COMPRESS_FLAG=--compressed"
+
 REM Perform a single request, writing headers and body to separate temp files
-curl -sSL --compressed -D "%HEADERS_FILE%" -o "%BODY_FILE%" ^
+curl -sSL %COMPRESS_FLAG% -D "%HEADERS_FILE%" -o "%BODY_FILE%" ^
     "%NEW_URL%"
 REM Extract Content-Disposition header if present
 set "CONTENT_DISPOSITION="
