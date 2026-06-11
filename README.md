@@ -81,6 +81,9 @@ download_report.bat ^
   --fiid FIID ^
   --api-url https://api.reports.uat.inet.paynet.my
 ```
+
+## Troubleshooting
+
 **Command Not Found Errors**
 - **OpenSSL/curl missing**: Install required tools or add them to your system PATH
 - **Permission denied (Linux/macOS)**: Run `chmod +x download_report.sh` to make the script executable
@@ -92,6 +95,24 @@ download_report.bat ^
 **Download Issues**
 - **Empty/missing file**: The one-time download URL may have expired - retry with fresh credentials
 - **OTT Invalid**: One-time token has been used or expired - generate a new download request
+
+### Using a Proxy
+
+If your environment requires routing traffic through a proxy, set the `HTTPS_PROXY` or `HTTP_PROXY` environment variable before running the script.
+
+**Linux/macOS (Bash)**
+```bash
+export HTTPS_PROXY=http://proxy.acme.com
+./download_report.sh --client-id myclient --client-secret mysecret ...
+```
+
+**Windows (Command Prompt)**
+```shell
+set HTTPS_PROXY=http://proxy.acme.com
+download_report.bat --client-id myclient --client-secret mysecret ...
+```
+
+`curl` automatically honours `HTTPS_PROXY` and `HTTP_PROXY`. Use `HTTPS_PROXY` for HTTPS endpoints (recommended) and `HTTP_PROXY` as a fallback for HTTP endpoints.
 
 ### Best Practices
 
