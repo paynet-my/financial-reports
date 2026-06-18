@@ -45,11 +45,11 @@ Example
 ./download_report.sh \
   --client-id myclient \
   --client-secret mysecret \
-  --report SETEL01 \
-  --date 2025-12-31 \
+  --report SETL01 \
+  --date 2026-07-15 \
   --product SAN \
   --fiid FIID \
-  --api-url https://api.reports.uat.inet.paynet.my \
+  --api-url https://api.reports.paynet.my \
   --output-dir ./downloads
 ```
 
@@ -75,26 +75,14 @@ Adjust the path if the script is not in the current directory.
 download_report.bat ^
   --client-id myclient ^
   --client-secret mysecret ^
-  --report SETEL01 ^
-  --date 2025-12-31 ^
+  --report SETL01 ^
+  --date 2026-07-15 ^
   --product SAN ^
   --fiid FIID ^
-  --api-url https://api.reports.uat.inet.paynet.my
+  --api-url https://api.reports.paynet.my
 ```
 
 ## Troubleshooting
-
-**Command Not Found Errors**
-- **OpenSSL/curl missing**: Install required tools or add them to your system PATH
-- **Permission denied (Linux/macOS)**: Run `chmod +x download_report.sh` to make the script executable
-
-**Authentication Problems**
-- **Invalid token**: Verify your client credentials are correct
-- **Authentication failed**: Check HMAC signature generation and timestamp
-
-**Download Issues**
-- **Empty/missing file**: The one-time download URL may have expired - retry with fresh credentials
-- **OTT Invalid**: One-time token has been used or expired - generate a new download request
 
 ### Using a Proxy
 
@@ -113,6 +101,18 @@ download_report.bat --client-id myclient --client-secret mysecret ...
 ```
 
 `curl` automatically honours `HTTPS_PROXY` and `HTTP_PROXY`. Use `HTTPS_PROXY` for HTTPS endpoints (recommended) and `HTTP_PROXY` as a fallback for HTTP endpoints.
+
+### Command Not Found Errors
+- **OpenSSL/curl missing**: Install required tools or add them to your system PATH
+- **Permission denied (Linux/macOS)**: Run `chmod +x download_report.sh` to make the script executable
+
+### Authentication Problems
+- **Invalid token**: Verify your client credentials are correct
+- **Authentication failed**: Check HMAC signature generation and timestamp
+
+### Download Issues
+- **Empty/missing file**: The one-time download URL may have expired - retry with fresh credentials
+- **OTT Invalid**: One-time token has been used or expired - generate a new download request
 
 ### Best Practices
 
