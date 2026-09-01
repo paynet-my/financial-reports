@@ -2,15 +2,19 @@
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 [OPTIONS]"
+    echo "Usage: $0 [COMMAND] [OPTIONS]"
+    echo
+    echo "Commands:"
+    echo "  types                 Retrieve available report types (only requires --client-id/--client-secret)"
+    echo "  (none)                Download a report (default)"
     echo
     echo "Options:"
     echo "  --client-id           Client ID for authentication (required)"
     echo "  --client-secret       Client secret for authentication (required)"
     echo "  --fiid                Your institution Financial ID (optional)"
-    echo "  --product             Product type (required)"
-    echo "  --report              Type of report to download (required)"
-    echo "  --date                Date for the report in YYYY-MM-DD format (required)"
+    echo "  --product             Product type (required for download)"
+    echo "  --report              Type of report to download (required for download)"
+    echo "  --date                Date for the report in YYYY-MM-DD format (required for download)"
     echo "  --output-dir          Directory to save downloaded files (optional)"
     echo "  --api-url             API URL (optional)"
     echo "  --help                Display this help message"
@@ -19,6 +23,7 @@ usage() {
     echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01 --date 2024-11-08"
     echo "  $0 --client-id myclient --client-secret mysecret --product san --report DFCUP --date 2024-11-08"
     echo "  $0 --client-id myclient --client-secret mysecret --product mydebit --report SETL01_C1 --date 2024-11-08 --output-dir ./downloads"
+    echo "  $0 types --client-id myclient --client-secret mysecret"
     exit 1
 }
 
@@ -52,10 +57,14 @@ if [ -z "$API_URL" ]; then
     API_URL="https://api.reports.paynet.my"
 fi
 
-if [ -z "$OUTPUT_DIR" ]; then    
+if [ -z "$OUTPUT_DIR" ]; then
     OUTPUT_DIR="./"
 fi
 
+if [ "$1" = "types" ]; then
+    LIST_TYPES=true
+    shift 1
+fi
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -157,44 +166,48 @@ if [ -z "$CLIENT_SECRET" ]; then
     help
 fi
 
-if [ -z "$REPORT_TYPE" ]; then
-    echo "ERROR: Missing required parameter: --report"
-    help
-fi
-
-if [ -z "$DATE" ]; then
-    echo "ERROR: Missing required parameter: --date"
-    help
-fi
-
-if [ -z "$PRODUCT" ]; then
-    echo "ERROR: Missing required parameter: --product"
-    help
-fi
-
-# Validate date format
-if ! [[ $DATE =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-    echo "ERROR: Date must be in YYYY-MM-DD format"
-    exit 1
-fi
-
-# Check if output directory is provided and valid
-if [ -n "$OUTPUT_DIR" ]; then
-    if [ ! -d "$OUTPUT_DIR" ]; then
-        echo "Creating output directory: $OUTPUT_DIR"
-        mkdir -p "$OUTPUT_DIR" || { echo "Failed to create output directory"; exit 1; }
+if [ "$LIST_TYPES" != true ]; then
+    if [ -z "$REPORT_TYPE" ]; then
+        echo "ERROR: Missing required parameter: --report"
+        help
     fi
-    # Make sure path ends with a slash
-    OUTPUT_DIR="${OUTPUT_DIR%/}/"
-    echo "Files will be saved to: $OUTPUT_DIR"
+
+    if [ -z "$DATE" ]; then
+        echo "ERROR: Missing required parameter: --date"
+        help
+    fi
+
+    if [ -z "$PRODUCT" ]; then
+        echo "ERROR: Missing required parameter: --product"
+        help
+    fi
+
+    # Validate date format
+    if ! [[ $DATE =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+        echo "ERROR: Date must be in YYYY-MM-DD format"
+        exit 1
+    fi
+
+    # Check if output directory is provided and valid
+    if [ -n "$OUTPUT_DIR" ]; then
+        if [ ! -d "$OUTPUT_DIR" ]; then
+            echo "Creating output directory: $OUTPUT_DIR"
+            mkdir -p "$OUTPUT_DIR" || { echo "Failed to create output directory"; exit 1; }
+        fi
+        # Make sure path ends with a slash
+        OUTPUT_DIR="${OUTPUT_DIR%/}/"
+        echo "Files will be saved to: $OUTPUT_DIR"
+    fi
 fi
 
 echo "Configuration:"
 echo " - API URL: $API_URL"
 if [ -n "$FIID" ]; then echo " - FIID: $FIID"; fi
-echo " - Report Type: $REPORT_TYPE"
-echo " - Product: $PRODUCT"
-echo " - Date: $DATE"
+if [ "$LIST_TYPES" != true ]; then
+    echo " - Report Type: $REPORT_TYPE"
+    echo " - Product: $PRODUCT"
+    echo " - Date: $DATE"
+fi
 
 # Get OAuth token
 echo "Requesting OAuth token..."
@@ -211,6 +224,24 @@ if [ -z "$ACCESS_TOKEN" ]; then
 fi
 
 echo "Access token obtained successfully"
+
+if [ "$LIST_TYPES" = true ]; then
+    TIMESTAMP=$(date +%s)
+    SIGNATURE=$(generate_signature "$TIMESTAMP" "$CLIENT_SECRET")
+
+    echo "Generated signature for report types request:"
+    echo " - Timestamp: $TIMESTAMP"
+    echo " - Signature: $SIGNATURE"
+
+    echo "Requesting report types..."
+    RESPONSE=$(curl -s -X GET "$API_URL/v1/reports/types" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "X-Timestamp: $TIMESTAMP" \
+        -H "X-Signature: $SIGNATURE")
+
+    echo "$RESPONSE"
+    exit 0
+fi
 
 # Prepare JSON payload based on whether WINDOW is provided
 if [ -n "$FIID" ]; then

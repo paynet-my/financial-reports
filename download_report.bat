@@ -7,6 +7,11 @@ REM ============================================================
 set "API_URL=https://api.reports.paynet.my"
 set "OUTPUT_DIR=.\"
 
+if /i "%~1"=="types" (
+  set "LIST_TYPES=1"
+  shift /1
+)
+
 REM ============================================================
 REM Parse command line arguments
 REM ============================================================
@@ -197,45 +202,46 @@ if not defined CLIENT_SECRET (
     call :help
     exit /b 1
 )
-if not defined REPORT_TYPE (
-    echo ERROR: Missing --report
-    call :help
-    exit /b 1
-)
-if not defined PRODUCT (
-    echo ERROR: Missing --product
-    call :help
-    exit /b 1
-)
-if not defined DDATE (
-    echo ERROR: Missing --date
-    call :help
-    exit /b 1
-)
+if not defined LIST_TYPES (
+    if not defined REPORT_TYPE (
+        echo ERROR: Missing --report
+        call :help
+        exit /b 1
+    )
+    if not defined PRODUCT (
+        echo ERROR: Missing --product
+        call :help
+        exit /b 1
+    )
+    if not defined DDATE (
+        echo ERROR: Missing --date
+        call :help
+        exit /b 1
+    )
 
-REM Validate date format (YYYY-MM-DD)
-echo %DDATE%| findstr /r "^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$" >nul
-if errorlevel 1 (
-    echo ERROR: Date must be in YYYY-MM-DD format
-    exit /b 1
-)
-
-REM ============================================================
-REM Create output directory if it doesn't exist
-REM ============================================================
-if not exist "%OUTPUT_DIR%" (
-    echo Creating output directory: %OUTPUT_DIR%
-    mkdir "%OUTPUT_DIR%" 2>nul
+    REM Validate date format (YYYY-MM-DD)
+    echo %DDATE%| findstr /r "^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$" >nul
     if errorlevel 1 (
-        echo Failed to create output directory
+        echo ERROR: Date must be in YYYY-MM-DD format
         exit /b 1
     )
 )
 
-REM Ensure output directory path ends with a backslash
-set "LAST_CHAR=!OUTPUT_DIR:~-1!"
-if not "!LAST_CHAR!"=="\" if not "!LAST_CHAR!"=="/" (
-    set "OUTPUT_DIR=!OUTPUT_DIR!\"
+if not defined LIST_TYPES (
+    if not exist "%OUTPUT_DIR%" (
+        echo Creating output directory: %OUTPUT_DIR%
+        mkdir "%OUTPUT_DIR%" 2>nul
+        if errorlevel 1 (
+            echo Failed to create output directory
+            exit /b 1
+        )
+    )
+
+    REM Ensure output directory path ends with a backslash
+    set "LAST_CHAR=!OUTPUT_DIR:~-1!"
+    if not "!LAST_CHAR!"=="\" if not "!LAST_CHAR!"=="/" (
+        set "OUTPUT_DIR=!OUTPUT_DIR!\"
+    )
 )
 
 REM ============================================================
@@ -244,10 +250,12 @@ REM ============================================================
 echo Configuration:
 echo  - API URL: %API_URL%
 if defined FIID echo  - FIID: %FIID%
-echo  - Report Type: %REPORT_TYPE%
-echo  - Product: %PRODUCT%
-echo  - Date: %DDATE%
-echo  - Output Directory: %OUTPUT_DIR%
+if not defined LIST_TYPES (
+    echo  - Report Type: %REPORT_TYPE%
+    echo  - Product: %PRODUCT%
+    echo  - Date: %DDATE%
+    echo  - Output Directory: %OUTPUT_DIR%
+)
 
 REM ============================================================
 REM Get OAuth token
@@ -272,6 +280,29 @@ if not defined ACCESS_TOKEN (
 )
 
 echo Access token obtained successfully
+
+if defined LIST_TYPES (
+    echo Generating signature for report types request...
+
+    for /f %%i in ('powershell -Command "Get-Date -Date (Get-Date).ToUniversalTime() -UFormat '%%s'"') do set "TIMESTAMP=%%i"
+    for /f "tokens=1 delims=." %%a in ("%TIMESTAMP%") do set "TIMESTAMP=%%a"
+
+    for /f "delims=" %%s in ('powershell -Command "$data=[System.Text.Encoding]::UTF8.GetBytes('%TIMESTAMP%'); $key=[System.Text.Encoding]::UTF8.GetBytes('%CLIENT_SECRET%'); $hmac = New-Object System.Security.Cryptography.HMACSHA256; $hmac.Key = $key; $sig = $hmac.ComputeHash($data); [System.BitConverter]::ToString($sig).Replace('-', '').ToLower()"') do (
+        set "SIGNATURE=%%s"
+    )
+
+    echo  - Timestamp: %TIMESTAMP%
+    echo  - Signature: %SIGNATURE%
+
+    echo Requesting report types...
+    curl -s -X GET "%API_URL%/v1/reports/types" ^
+        -H "Authorization: Bearer %ACCESS_TOKEN%" ^
+        -H "X-Timestamp: %TIMESTAMP%" ^
+        -H "X-Signature: %SIGNATURE%"
+
+    endlocal
+    exit /b 0
+)
 
 REM ============================================================
 REM Generate HMAC-SHA256 signature using PowerShell
@@ -429,15 +460,19 @@ REM ============================================================
 REM Function to display usage
 REM ============================================================
 :usage
-echo Usage: %~nx0 [OPTIONS]
+echo Usage: %~nx0 [COMMAND] [OPTIONS]
+echo.
+echo Commands:
+echo   types                 Retrieve available report types (only requires --client-id/--client-secret)
+echo   (none)                Download a report (default)
 echo.
 echo Options:
 echo   --client-id           Client ID for authentication (required)
 echo   --client-secret       Client secret for authentication (required)
 echo   --fiid                FIID or alias e.g. mbb, cimb, rhb (optional)
-echo   --report              Type of report to download (required)
-echo   --date                Date for the report in YYYY-MM-DD format (required)
-echo   --product             Product type (required)
+echo   --report              Type of report to download (required for download)
+echo   --date                Date for the report in YYYY-MM-DD format (required for download)
+echo   --product             Product type (required for download)
 echo   --output-dir          Directory to save downloaded files (optional)
 echo   --api-url             API URL (optional)
 echo   --help                Display this help message
@@ -447,6 +482,7 @@ echo   %~nx0 --client-id myclient --client-secret mysecret --report SETL01 --dat
 echo   %~nx0 --client-id myclient --client-secret mysecret --report DFCUP --date 2024-11-08 --product san
 echo   %~nx0 --client-id myclient --client-secret mysecret --report SETL01_C1 --date 2024-11-08 --product mydebit --output-dir .\downloads
 echo   %~nx0 --client-id myclient --client-secret mysecret --fiid MBB --report SETL01 --date 2024-11-08 --product mydebit
+echo   %~nx0 types --client-id myclient --client-secret mysecret
 goto :eof
 
 :help

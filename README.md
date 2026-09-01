@@ -38,16 +38,21 @@ This is a public facing OSP's reporting API
 
 Below is a concise guide on how to use the provided Bash (`.sh`) and Batch (`.bat`) scripts for downloading reports.
 
-## Script **flags**
+## Script flags
+
+**Commands**
+
+- `types` – (Optional, must be the first argument) Retrieve available report types instead of downloading a report; only `--client-id`/`--client-secret` (and optionally `--api-url`) are required when this is passed
+- *(none)* – Downloads a report (default behavior)
 
 **Options**
 
 - `--client-id` – Client ID for authentication (required)
 - `--client-secret` – Client secret for authentication (required)
 - `--fiid` – (Optional) FIID or financial institution ID
-- `--report` – Report type to download (required)
-- `--date` – Date (YYYY-MM-DD) for the report (required)
-- `--product` - Product type; SAN or MYDEBIT (required)
+- `--report` – Report type to download (required for download)
+- `--date` – Date (YYYY-MM-DD) for the report (required for download)
+- `--product` - Product type; SAN or MYDEBIT (required for download)
 - `--output-dir` – (Optional) Directory to save downloaded files; defaults to current directory if missing
 - `--api-url` – (Optional) Report service API URL; defaults to https://api.reports.paynet.my
 - `--help` – Display the script’s built-in usage message
@@ -61,7 +66,7 @@ Below is a concise guide on how to use the provided Bash (`.sh`) and Batch (`.ba
 
 **How to Run**
 ```bash
-./download_report.sh [OPTIONS]
+./download_report.sh [COMMAND] [OPTIONS]
 ```
 
 If the script isn’t marked as executable, make it executable first:
@@ -94,7 +99,7 @@ Example
 Open Command Prompt or PowerShell, then run:
 
 ```shell
-download_report.bat [OPTIONS]
+download_report.bat [COMMAND] [OPTIONS]
 ```
 
 Adjust the path if the script is not in the current directory.
@@ -110,6 +115,20 @@ download_report.bat ^
   --product SAN ^
   --fiid FIID ^
   --api-url https://api.reports.paynet.my
+```
+
+### Retrieving report types
+
+Pass `types` as the first argument to fetch the list of available report types instead of downloading a report. Only `--client-id`/`--client-secret` (and optionally `--api-url`) are needed — `--report`, `--date`, `--product`, and `--output-dir` are not used. The raw JSON response is printed to stdout.
+
+**Bash**
+```bash
+./download_report.sh types --client-id myclient --client-secret mysecret
+```
+
+**Batch**
+```shell
+download_report.bat types --client-id myclient --client-secret mysecret
 ```
 
 ## Troubleshooting
