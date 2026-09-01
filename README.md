@@ -6,32 +6,42 @@ This is a public facing OSP's reporting API
 
 ### Supported report code
 
-| Base Code | Description | Category |
-|---|---|---|
-| AIR02 | Acquirer Itemized Report | SAN |
-| BFMR05 | Monthly Bank Fee Report | SAN |
-| BFR04 | Daily Bank Fee Report | SAN |
-| BSR01 | Bank Settlement Report | SAN |
-| DFCUP | Daily Forex Report for UPI / CUP | SAN |
-| DIT308 | Details Instant Transfer Report | SAN |
-| FFCUP | Fee Forex Report for UPI / CUP | SAN |
-| IIR03 | Issuer Itemized Report | SAN |
-| RECON | Reconciliation File for Participant | SAN |
-| SETL01 | Settlement Report | SAN |
-| SETL02 | Net Settlement Report | SAN |
-| SFCUP | Summary Forex Report for UPI / CUP | SAN |
-| SFDISC | Summary Forex Report for Discover | SAN |
-| SIT307 | Summary Instant Transfer Report | SAN |
-| ST1527 | Monthly Fee Summary Report | SAN |
-| ST1528 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN |
-| ST1529 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN |
-| STAT09 | Transaction Detail Report | SAN |
-| STAT09ACQ | Acquirer Report | SAN |
-| STAT09ISS | Issuer Report | SAN |
-| STD1527 | Daily Fee Summary Report | SAN |
-| STD1528 | Daily Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN |
-| STD1529 | Daily Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN |
-| STMUPI | Monthly UPI Fee Report | SAN |
+The table below is a general reference. Actual access varies by financial institution. Run the [`types` command](#retrieving-report-types) with your own credentials to get the live list of report types available to your FI.
+
+A handful of reports run on a settlement cycle (`AM`, `PM`, or `ALL`) instead of a single daily run. For those, `--report` must include the cycle suffix: `_C1` for `AM` and `_C2` for `PM` (e.g. `SETL01_C1`, `SETL01_C2`); `ALL` uses the ebase code as-is (e.g. `SETL01`).
+
+| Base Code | Description | Category | Cycle |
+|---|---|---|---|
+| AIR02 | Acquirer Itemized Report | SAN | ALL |
+| BFMR05 | Monthly Bank Fee Report | SAN | ALL |
+| BFR04 | Daily Bank Fee Report | SAN | ALL |
+| BSR01 | Bank Settlement Report | SAN | ALL |
+| BSR01_C1 | Bank Settlement Report | SAN | AM |
+| BSR01_C2 | Bank Settlement Report | SAN | PM |
+| DFCUP | Daily Forex Report for UPI / CUP | SAN | ALL |
+| DIT308 | Details Instant Transfer Report | SAN | ALL |
+| FFCUP | Fee Forex Report for UPI / CUP | SAN | ALL |
+| IIR03 | Issuer Itemized Report | SAN | ALL |
+| RECON | Reconciliation File for Participant | SAN | ALL |
+| SETL01 | Settlement Report | SAN | ALL |
+| SETL01_C1 | Settlement Report | SAN | AM |
+| SETL01_C2 | Settlement Report | SAN | PM |
+| SETL02 | Net Settlement Report | SAN | ALL |
+| SETL02_C1 | Net Settlement Report | SAN | AM |
+| SETL02_C2 | Net Settlement Report | SAN | PM |
+| SFCUP | Summary Forex Report for UPI / CUP | SAN | ALL |
+| SFDISC | Summary Forex Report for Discover | SAN | ALL |
+| SIT307 | Summary Instant Transfer Report | SAN | ALL |
+| ST1527 | Monthly Fee Summary Report | SAN | ALL |
+| ST1528 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN | ALL |
+| ST1529 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN | ALL |
+| STAT09 | Transaction Detail Report | SAN | ALL |
+| STAT09ACQ | Acquirer Report | SAN | ALL |
+| STAT09ISS | Issuer Report | SAN | ALL |
+| STD1527 | Daily Fee Summary Report | SAN | ALL |
+| STD1528 | Daily Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN | ALL |
+| STD1529 | Daily Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN | ALL |
+| STMUPI | Monthly UPI Fee Report | SAN | ALL |
 
 
 ## How to use the automation script
@@ -120,6 +130,8 @@ download_report.bat ^
 ### Retrieving report types
 
 Pass `types` as the first argument to fetch the list of available report types instead of downloading a report. Only `--client-id`/`--client-secret` (and optionally `--api-url`) are needed — `--report`, `--date`, `--product`, and `--output-dir` are not used. The raw JSON response is printed to stdout.
+
+Since report access varies by financial institution, use this to confirm which report codes your credentials can actually pull before referencing the [static table above](#supported-report-code).
 
 **Bash**
 ```bash
