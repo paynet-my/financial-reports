@@ -4,6 +4,36 @@
 
 This is a public facing OSP's reporting API
 
+### Supported report code
+
+| Base Code | Description | Category |
+|---|---|---|
+| AIR02 | Acquirer Itemized Report | SAN |
+| BFMR05 | Monthly Bank Fee Report | SAN |
+| BFR04 | Daily Bank Fee Report | SAN |
+| BSR01 | Bank Settlement Report | SAN |
+| DFCUP | Daily Forex Report for UPI / CUP | SAN |
+| DIT308 | Details Instant Transfer Report | SAN |
+| FFCUP | Fee Forex Report for UPI / CUP | SAN |
+| IIR03 | Issuer Itemized Report | SAN |
+| RECON | Reconciliation File for Participant | SAN |
+| SETL01 | Settlement Report | SAN |
+| SETL02 | Net Settlement Report | SAN |
+| SFCUP | Summary Forex Report for UPI / CUP | SAN |
+| SFDISC | Summary Forex Report for Discover | SAN |
+| SIT307 | Summary Instant Transfer Report | SAN |
+| ST1527 | Monthly Fee Summary Report | SAN |
+| ST1528 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN |
+| ST1529 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN |
+| STAT09 | Transaction Detail Report | SAN |
+| STAT09ACQ | Acquirer Report | SAN |
+| STAT09ISS | Issuer Report | SAN |
+| STD1527 | Daily Fee Summary Report | SAN |
+| STD1528 | Daily Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN |
+| STD1529 | Daily Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN |
+| STMUPI | Monthly UPI Fee Report | SAN |
+
+
 ## How to use the automation script
 
 Below is a concise guide on how to use the provided Bash (`.sh`) and Batch (`.bat`) scripts for downloading reports.
