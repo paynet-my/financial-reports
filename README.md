@@ -41,6 +41,81 @@ A handful of reports run on a settlement cycle (`AM`, `PM`, or `ALL`) instead of
 | STD1529 | Daily Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN | ALL |
 | STMUPI | Monthly UPI Fee Report | SAN | ALL |
 
+### Check which report codes your Institution can access
+
+The table above lists every report the API supports. The codes your FI is actually
+entitled to depend on your client credentials (each report is gated by an
+include/exclude FI list). Call `GET /v1/reports/types` to get the authoritative,
+per-FI view.
+
+**Environments**
+
+| Environment | Base URL |
+|---|---|
+| UAT | `https://api.reports.uat.inet.paynet.my` |
+| Production | `https://api.reports.paynet.my` |
+
+**Step 1 — get an access token**
+
+```bash
+curl --location --request POST 'https://api.reports.paynet.my/token' \
+  --header 'Content-Type: application/x-www-form-urlencoded' \
+  --data-urlencode 'grant_type=client_credentials' \
+  --data-urlencode 'client_id=YOUR_CLIENT_ID' \
+  --data-urlencode 'client_secret=YOUR_CLIENT_SECRET'
+```
+
+Response:
+
+```json
+{ "access_token": "eyJraWQiOi...", "token_type": "Bearer", "expires_in": 3600 }
+```
+
+**Step 2 — sign the request**
+
+`X-Timestamp` is the current Unix time (seconds). `X-Signature` is the
+HMAC-SHA256 of that timestamp, keyed with your client secret, as lowercase hex.
+
+```bash
+TS=$(date +%s)
+SIG=$(printf '%s' "$TS" | openssl dgst -sha256 -hmac "YOUR_CLIENT_SECRET" | sed 's/^.* //')
+```
+
+**Step 3 — list the report types**
+
+```bash
+curl --location 'https://api.reports.paynet.my/v1/reports/types' \
+  --header "Authorization: Bearer $ACCESS_TOKEN" \
+  --header "X-Timestamp: $TS" \
+  --header "X-Signature: $SIG"
+```
+
+The response lists the report types available to your FI — use these `type`
+values with `--report`. Reports your FI is not entitled to are omitted:
+
+```json
+{
+    "success": true,
+    "data": [
+        {
+            "type": "AIR02",
+            "name": "Acquirer Itemized Report",
+            "description": "Acquirer Itemized Report",
+            "supported_products": [
+                "SAN"
+            ]
+        }
+      ]
+}
+```
+
+Common errors:
+
+| HTTP | Meaning | Fix |
+|---|---|---|
+| 401 | Invalid or expired bearer token | Re-run step 1 |
+| 401 / 403 | Signature or timestamp rejected | Regenerate `X-Timestamp`/`X-Signature`; check clock skew and that the secret matches the client ID |
+
 
 ## How to use the automation script
 
