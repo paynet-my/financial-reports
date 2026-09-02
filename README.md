@@ -4,44 +4,7 @@
 
 This is a public facing OSP's reporting API
 
-### Supported report code
-
-A handful of reports run on a settlement cycle (`AM`, `PM`, or `ALL`) instead of a single daily run. For those, `--report` must include the cycle suffix: `_C1` for `AM` and `_C2` for `PM` (e.g. `SETL01_C1`, `SETL01_C2`); `ALL` uses the ebase code as-is (e.g. `SETL01`).
-
-| Base Code | Description | Category | Cycle |
-|---|---|---|---|
-| AIR02 | Acquirer Itemized Report | SAN | ALL |
-| BFMR05 | Monthly Bank Fee Report | SAN | ALL |
-| BFR04 | Daily Bank Fee Report | SAN | ALL |
-| BSR01 | Bank Settlement Report | SAN | ALL |
-| BSR01_C1 | Bank Settlement Report | SAN | AM |
-| BSR01_C2 | Bank Settlement Report | SAN | PM |
-| DFCUP | Daily Forex Report for UPI / CUP | SAN | ALL |
-| DIT308 | Details Instant Transfer Report | SAN | ALL |
-| FFCUP | Fee Forex Report for UPI / CUP | SAN | ALL |
-| IIR03 | Issuer Itemized Report | SAN | ALL |
-| RECON | Reconciliation File for Participant | SAN | ALL |
-| SETL01 | Settlement Report | SAN | ALL |
-| SETL01_C1 | Settlement Report | SAN | AM |
-| SETL01_C2 | Settlement Report | SAN | PM |
-| SETL02 | Net Settlement Report | SAN | ALL |
-| SETL02_C1 | Net Settlement Report | SAN | AM |
-| SETL02_C2 | Net Settlement Report | SAN | PM |
-| SFCUP | Summary Forex Report for UPI / CUP | SAN | ALL |
-| SFDISC | Summary Forex Report for Discover | SAN | ALL |
-| SIT307 | Summary Instant Transfer Report | SAN | ALL |
-| ST1527 | Monthly Fee Summary Report | SAN | ALL |
-| ST1528 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN | ALL |
-| ST1529 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN | ALL |
-| STAT09 | Transaction Detail Report | SAN | ALL |
-| STAT09ACQ | Acquirer Report | SAN | ALL |
-| STAT09ISS | Issuer Report | SAN | ALL |
-| STD1527 | Daily Fee Summary Report | SAN | ALL |
-| STD1528 | Daily Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN | ALL |
-| STD1529 | Daily Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN | ALL |
-| STMUPI | Monthly UPI Fee Report | SAN | ALL |
-
-### Check which report codes your Institution can access
+## Check which report codes your Institution can access
 
 The table above lists every report the API supports. The codes your FI is actually
 entitled to depend on your client credentials (each report is gated by an
@@ -109,12 +72,42 @@ values with `--report`. Reports your FI is not entitled to are omitted:
 }
 ```
 
-Common errors:
+### Supported report code
 
-| HTTP | Meaning | Fix |
-|---|---|---|
-| 401 | Invalid or expired bearer token | Re-run step 1 |
-| 401 / 403 | Signature or timestamp rejected | Regenerate `X-Timestamp`/`X-Signature`; check clock skew and that the secret matches the client ID |
+A handful of reports run on a settlement cycle (`AM`, `PM`, or `ALL`) instead of a single daily run. For those, `--report` must include the cycle suffix: `_C1` for `AM` and `_C2` for `PM` (e.g. `SETL01_C1`, `SETL01_C2`); `ALL` uses the ebase code as-is (e.g. `SETL01`).
+
+| Base Code | Description | Category | Cycle |
+|---|---|---|---|
+| AIR02 | Acquirer Itemized Report | SAN | ALL |
+| BFMR05 | Monthly Bank Fee Report | SAN | ALL |
+| BFR04 | Daily Bank Fee Report | SAN | ALL |
+| BSR01 | Bank Settlement Report | SAN | ALL |
+| BSR01_C1 | Bank Settlement Report | SAN | AM |
+| BSR01_C2 | Bank Settlement Report | SAN | PM |
+| DFCUP | Daily Forex Report for UPI / CUP | SAN | ALL |
+| DIT308 | Details Instant Transfer Report | SAN | ALL |
+| FFCUP | Fee Forex Report for UPI / CUP | SAN | ALL |
+| IIR03 | Issuer Itemized Report | SAN | ALL |
+| RECON | Reconciliation File for Participant | SAN | ALL |
+| SETL01 | Settlement Report | SAN | ALL |
+| SETL01_C1 | Settlement Report | SAN | AM |
+| SETL01_C2 | Settlement Report | SAN | PM |
+| SETL02 | Net Settlement Report | SAN | ALL |
+| SETL02_C1 | Net Settlement Report | SAN | AM |
+| SETL02_C2 | Net Settlement Report | SAN | PM |
+| SFCUP | Summary Forex Report for UPI / CUP | SAN | ALL |
+| SFDISC | Summary Forex Report for Discover | SAN | ALL |
+| SIT307 | Summary Instant Transfer Report | SAN | ALL |
+| ST1527 | Monthly Fee Summary Report | SAN | ALL |
+| ST1528 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN | ALL |
+| ST1529 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN | ALL |
+| STAT09 | Transaction Detail Report | SAN | ALL |
+| STAT09ACQ | Acquirer Report | SAN | ALL |
+| STAT09ISS | Issuer Report | SAN | ALL |
+| STD1527 | Daily Fee Summary Report | SAN | ALL |
+| STD1528 | Daily Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN | ALL |
+| STD1529 | Daily Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN | ALL |
+| STMUPI | Monthly UPI Fee Report | SAN | ALL |
 
 
 ## How to use the automation script
