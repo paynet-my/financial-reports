@@ -1,22 +1,38 @@
 # PayNet Financial Report Script
 
+## Table of Contents
+
+- [PayNet Financial Report Script](#paynet-financial-report-script)
+  - [Table of Contents](#table-of-contents)
+  - [Getting started](#getting-started)
+    - [Environments](#environments)
+  - [Check which report codes your Institution can access](#check-which-report-codes-your-institution-can-access)
+  - [How to use the automation script](#how-to-use-the-automation-script)
+  - [Script **flags**](#script-flags)
+    - [Bash Script (Linux/macOS)](#bash-script-linuxmacos)
+    - [Batch Script (Windows)](#batch-script-windows)
+  - [Troubleshooting](#troubleshooting)
+    - [Using a Proxy](#using-a-proxy)
+    - [Command Not Found Errors](#command-not-found-errors)
+    - [Authentication Problems](#authentication-problems)
+    - [Download Issues](#download-issues)
+    - [Best Practices](#best-practices)
+    - [Additional Resources](#additional-resources)
+
 ## Getting started
 
 This is a public facing OSP's reporting API
 
-## Check which report codes your Institution can access
-
-The table above lists every report the API supports. The codes your FI is actually
-entitled to depend on your client credentials (each report is gated by an
-include/exclude FI list). Call `GET /v1/reports/types` to get the authoritative,
-per-FI view.
-
-**Environments**
+### Environments
 
 | Environment | Base URL |
 |---|---|
 | UAT | `https://api.reports.uat.inet.paynet.my` |
 | Production | `https://api.reports.paynet.my` |
+
+## Check which report codes your Institution can access
+
+The available report types depend on your financial institution. Call `GET /v1/reports/types` to retrieve the list of reports your FI is permitted to access.
 
 **Step 1 — get an access token**
 
@@ -71,44 +87,6 @@ values with `--report`. Reports your FI is not entitled to are omitted:
       ]
 }
 ```
-
-### Supported report code
-
-A handful of reports run on a settlement cycle (`AM`, `PM`, or `ALL`) instead of a single daily run. For those, `--report` must include the cycle suffix: `_C1` for `AM` and `_C2` for `PM` (e.g. `SETL01_C1`, `SETL01_C2`); `ALL` uses the ebase code as-is (e.g. `SETL01`).
-
-| Base Code | Description | Category | Cycle |
-|---|---|---|---|
-| AIR02 | Acquirer Itemized Report | SAN | ALL |
-| BFMR05 | Monthly Bank Fee Report | SAN | ALL |
-| BFR04 | Daily Bank Fee Report | SAN | ALL |
-| BSR01 | Bank Settlement Report | SAN | ALL |
-| BSR01_C1 | Bank Settlement Report | SAN | AM |
-| BSR01_C2 | Bank Settlement Report | SAN | PM |
-| DFCUP | Daily Forex Report for UPI / CUP | SAN | ALL |
-| DIT308 | Details Instant Transfer Report | SAN | ALL |
-| FFCUP | Fee Forex Report for UPI / CUP | SAN | ALL |
-| IIR03 | Issuer Itemized Report | SAN | ALL |
-| RECON | Reconciliation File for Participant | SAN | ALL |
-| SETL01 | Settlement Report | SAN | ALL |
-| SETL01_C1 | Settlement Report | SAN | AM |
-| SETL01_C2 | Settlement Report | SAN | PM |
-| SETL02 | Net Settlement Report | SAN | ALL |
-| SETL02_C1 | Net Settlement Report | SAN | AM |
-| SETL02_C2 | Net Settlement Report | SAN | PM |
-| SFCUP | Summary Forex Report for UPI / CUP | SAN | ALL |
-| SFDISC | Summary Forex Report for Discover | SAN | ALL |
-| SIT307 | Summary Instant Transfer Report | SAN | ALL |
-| ST1527 | Monthly Fee Summary Report | SAN | ALL |
-| ST1528 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN | ALL |
-| ST1529 | Monthly Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN | ALL |
-| STAT09 | Transaction Detail Report | SAN | ALL |
-| STAT09ACQ | Acquirer Report | SAN | ALL |
-| STAT09ISS | Issuer Report | SAN | ALL |
-| STD1527 | Daily Fee Summary Report | SAN | ALL |
-| STD1528 | Daily Fee Summary Report for IBFT 1, 2 & 4 (<= RM 5k) | SAN | ALL |
-| STD1529 | Daily Fee Summary Report for IBFT 1, 2 & 4 (> RM 5k) | SAN | ALL |
-| STMUPI | Monthly UPI Fee Report | SAN | ALL |
-
 
 ## How to use the automation script
 
@@ -226,7 +204,7 @@ download_report.bat --client-id myclient --client-secret mysecret ...
 
 ### Additional Resources
 
-For more information , please visit the following online resource available on PayNet's Developer's Portal 
+For more information , please visit the following online resource available on PayNet's Developer's Portal.
 
 - [Overview](https://docs.developer.paynet.my/docs/operations/financial-reports/tech-refresh/overview) 
 - [API Explorer](https://docs.developer.paynet.my/api-reference/reports/reports) 
