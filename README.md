@@ -21,7 +21,7 @@
 
 ## Getting started
 
-This curl implementation of PayNet's reporting API
+This is a cURL implementation of PayNet's reporting API.
 
 ### Environments
 
