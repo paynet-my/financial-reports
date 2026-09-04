@@ -21,7 +21,7 @@
 
 ## Getting started
 
-This is a public facing OSP's reporting API
+This curl implementation of PayNet's reporting API
 
 ### Environments
 
