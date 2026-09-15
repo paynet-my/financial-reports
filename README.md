@@ -133,7 +133,7 @@ Example
   --date 2026-07-15 \
   --product SAN \
   --fiid FIID \
-  --api-url https://api.reports.paynet.my \
+  --api-url https://api.reports.uat.inet.my \
   --output-dir ./downloads
 ```
 
@@ -163,7 +163,7 @@ download_report.bat ^
   --date 2026-07-15 ^
   --product SAN ^
   --fiid FIID ^
-  --api-url https://api.reports.paynet.my
+  --api-url https://api.reports.uat.inet.my
 ```
 
 ## Troubleshooting
